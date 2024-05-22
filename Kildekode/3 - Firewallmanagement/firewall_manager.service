@@ -1,0 +1,15 @@
+[Unit]
+Description=My Python Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/firewall_manager/firewall_manager.py
+WorkingDirectory=/opt/firewall_manager/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=database-user
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,290 @@
+let auth0Client = null;
+let allReservations = null;
+
+const fetchAuthConfig = () => fetch("/config/auth_config.json");
+
+const configureClient = async () => {
+  const response = await fetchAuthConfig();
+  const config = await response.json();
+  
+  auth0Client = await auth0.createAuth0Client({
+    domain: config.domain,
+    clientId: config.clientId,
+    authorizationParams: {
+      audience: config.audience
+    }
+  });
+};
+
+window.onload = async () => {
+    await configureClient();
+
+    updateUI();
+
+    const isAuthenticated = await auth0Client.isAuthenticated();
+
+    if (isAuthenticated) {
+      
+      const token = await auth0Client.getTokenSilently();
+
+      const userEmail = await auth0Client.getUser().then(getUserEmail => getUserEmail["email"]);
+
+      updateUI(userEmail);
+
+      const ticket = "PVEAuthCookie";
+      // Set up options for the fetch request
+      const options = {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+        
+      };
+
+      // Make the fetch request with the provided options
+      fetch('http://10.100.101.54:8080/credentials?email=test@test.test', options)
+        .then(response => {
+          // Check if the request was successful
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // Parse the response as JSON
+          return response.json();
+        })
+        .then(data => {
+          // Handle the JSON data
+          const cookie = data.cookie;
+          const toke = data.token;
+          const vm_id = data.virtualMachineId;
+          const fin = ticket.concat("=", cookie);
+          document.cookie = fin;
+          console.log('VM ID:', vm_id);
+        })
+        .catch(error => {
+          // Handle any errors that occurred during the fetch
+          console.error('Fetch error:', error);
+        });
+
+      //getReservations(token, userEmail);
+
+      // https://simonplend.com/how-to-use-fetch-to-post-form-data-as-json-to-your-api/   -> LINK TIL TUTORIAL FOR FETCH GJENNOM SUBMIT-FORM
+      // https://www.youtube.com/watch?v=DqyJFV7QJqc&t=324s -> Denne også
+      const calenderForm = document.getElementById("calenderForm");
+      calenderForm.addEventListener("submit", event => {
+        event.preventDefault();
+        
+        console.log(userEmail);
+
+        const formData = new FormData(calenderForm);
+        const data = Object.fromEntries(formData);
+        
+        fetch(`http://10.100.101.54:8080/reservations?email=${userEmail}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data),
+        }).then(result => result.json())
+        .then(data => console.log(data))
+        .catch(error => console.log(error))
+        location.reload();
+      });
+      
+      document.addEventListener('DOMContentLoaded', getReservations(token, userEmail));
+      console.log(token);
+      return;
+    }
+  
+    // NEW - check for the code and state parameters
+    const query = window.location.search;
+    if (query.includes("code=") && query.includes("state=")) {
+  
+      // Process the login state
+      await auth0Client.handleRedirectCallback();
+
+      updateUI();
+  
+      // Use replaceState to redirect the user away and remove the querystring parameters
+      window.history.replaceState({}, document.title, "/");
+
+      location.reload();
+
+    }
+}
+
+const updateUI = async (mail) => {
+
+    const isAuthenticated = await auth0Client.isAuthenticated();
+    
+    if (isAuthenticated) {
+      document.getElementById("gated-content").classList.remove("hidden");
+      document.getElementById("btn-logout").classList.remove("hidden");
+      document.getElementById("btn-login").classList.add("hidden");
+      document.getElementById("top-text").innerHTML = `Reservasjonsoversikt for "${mail}"`;
+    } else {
+      document.getElementById("gated-content").classList.add("hidden");
+      document.getElementById("btn-login").classList.remove("hidden");
+      document.getElementById("btn-logout").classList.add("hidden");
+      document.getElementById("btn-api").classList.add("hidden");
+    }
+};
+
+
+const login = async () => {
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: window.location.origin
+      }
+    });
+};
+
+const logout = () => {
+  auth0Client.logout({
+    logoutParams: {
+      returnTo: window.location.origin
+    }
+  });
+};
+
+
+
+
+
+/* Open when someone clicks on the span element */
+function openNav() {
+    document.getElementById("menu__toggle").style.width = "100%";
+    
+}
+  
+function closeNav() {
+    document.getElementById('menu__box').style.width = "0%";
+    document.getElementById('menu__toggle').checked = false; // Uncheck the toggle
+}
+
+
+
+
+
+/*Oppsett for kalender*/ 
+async function generateCalender(userFound){
+  
+  console.log(allReservations);
+  var calendarEl = document.getElementById('calendar');
+
+  if(userFound == true){
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      customButtons: {
+        reserverVM: {
+        text: 'Reserver',
+        click: function() {
+            const overlay = document.getElementById('popupOverlay'); 
+            overlay.classList.toggle('show'); 
+          }
+        }
+      },
+        initialView: 'timeGridWeek',
+        nowIndicator: true,
+        allDaySlot: false,
+        weekNumberCalculation: 'ISO',
+        slotMinTime: '08:00:00',
+        slotMaxTime: '21:00:00',
+        weekends: true,
+        locale: 'no',
+        headerToolbar: {
+          left: 'prev,next today,reserverVM',
+          center: 'title',
+          right: 'timeGridWeek,timeGridDay'
+        },
+        navLinks: true, // can click day/week names to navigate views
+        dayMaxEvents: true, // allow "more" link when too many events
+        events: [allReservations]
+      });
+  } else{
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      customButtons: {
+        reserverVM: {
+        text: 'Reserver',
+        click: function() {
+            const overlay = document.getElementById('popupOverlay'); 
+            overlay.classList.toggle('show'); 
+          }
+        }
+      },
+        initialView: 'timeGridWeek',
+        nowIndicator: true,
+        allDaySlot: false,
+        weekNumberCalculation: 'ISO',
+        slotMinTime: '08:00:00',
+        slotMaxTime: '21:00:00',
+        weekends: true,
+        locale: 'no',
+        headerToolbar: {
+          left: 'prev,next today,reserverVM',
+          center: 'title',
+          right: 'timeGridWeek,timeGridDay'
+        },
+        navLinks: true, // can click day/week names to navigate views
+        dayMaxEvents: true, // allow "more" link when too many events
+        events: allReservations
+      });
+  }
+    calendar.render();
+  }
+
+  
+  function on() {
+    document.getElementById("myForm").style.display = "block";
+  }
+  
+  function off() {
+    document.getElementById("myForm").style.display = "none";
+  }
+  
+  function togglePopup() { 
+    const overlay = document.getElementById('popupOverlay'); 
+    overlay.classList.toggle('show'); 
+  }
+  
+
+
+async function getReservations(token, userEmail) {
+  const response = await fetch(`http://10.100.101.54:8080/reservations?email=${userEmail}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
+  });
+
+  if(!response.ok){
+    document.getElementById("btn-api").classList.add("hidden");
+    console.log("User has no reservations");
+    generateCalender(false);
+  } else {
+    const data = await response.json();
+    document.getElementById("btn-api").classList.remove("hidden");
+    allReservations = data;
+    generateCalender(true);
+  }
+}
+
+ 
+const deleteReservation = async () => {
+    try {
+      const token = await auth0Client.getTokenSilently();
+      const userEmail = await auth0Client.getUser().then(getUserEmail => getUserEmail["email"]);
+
+      const response = await fetch(`http://10.100.101.54:8080/reservations?email=${userEmail}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        method: 'DELETE',
+      });
+
+      location.reload();
+    
+    } catch (e) {
+        // Display errors in the console
+        console.error(e);
+    }
+}

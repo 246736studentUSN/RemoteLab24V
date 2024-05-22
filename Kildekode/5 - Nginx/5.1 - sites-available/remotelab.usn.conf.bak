@@ -1,0 +1,59 @@
+# Virtual host for 192.168.171.146
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    include snippets/self-signed.conf;
+    include snippets/ssl-params.conf;
+
+    server_name 10.100.101.53;
+
+    location / {
+        root /www/vhosts/www2;
+        index index.html;
+    }
+
+    location /api2/ {
+        proxy_pass https://10.100.101.20:8006;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+
+    # Additional configuration for serving frontend files (if applicable)
+}
+
+# Virtual host for 192.168.171.148
+#server {
+#    listen 443 ssl;
+#    listen [::]:443 ssl;
+#    ssl_certificate /path/to/ssl/certificate.crt; # Specify the SSL certificate file path
+#    ssl_certificate_key /path/to/ssl/private.key; # Specify the SSL private key file path
+#
+#    server_name 192.168.171.148;
+
+#    location / {
+#        root /www/vhosts/www3; # Change this to the appropriate root directory for the second virtual host
+#        index index.html;
+#    }
+#
+#    location /api2/ {
+#        proxy_pass https://192.168.171.142:8006;
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Real-IP $remote_addr;
+#        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_set_header X-Forwarded-Proto $scheme;
+#        add_header 'Access-Control-Allow-Origin' '*' always;
+#        add_header 'Access-Control-Allow-Credentials' 'true' always;
+#
+#        proxy_set_header Upgrade $http_upgrade;
+#        proxy_set_header Connection "Upgrade";
+#    }
+#
+    # Additional configuration for serving frontend files (if applicable)
+#}

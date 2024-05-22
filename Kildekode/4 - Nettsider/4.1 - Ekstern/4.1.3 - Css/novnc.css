@@ -1,0 +1,17 @@
+.novnc-css {
+  display: flex;
+  flex-direction: column;
+  gap: 20px
+  justify-content: center;
+}
+
+.novnc-css > div {
+  display: block;
+  background-color: #e57000;
+  text-align: center;
+}
+
+.novnc-css > a {
+  text-decoration: none;
+  
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RemoteLab</title>
+    <link rel="stylesheet" href="/Css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="Javascript/script.js"></script>
+    <link rel="stylesheet" href="/Css/novnc.css">
+</head>
+<body>
+
+    <header>
+        <nav class="hamburger-menu">
+            <input id="menu__toggle" type="checkbox" />
+            <label class="menu__btn" for="menu__toggle">
+                <span></span>
+            </label>
+            <ul class="menu__box">
+                <li><a class="menu__item" href="#hjem">Hjem</a></li>
+                <li><a class="menu__item" href="#omoss">Om Oss</a></li>
+                <li><a class="hidden menu__item" id="noVNC_link" href="#">noVNC fullskjerm</a></li>
+            </ul>
+        </nav>
+        <div>
+            <button class="hidden" id="btn-login" onclick="login()">Logg inn</button> <!--provided by auth0 tutorial: https://auth0.com/docs/quickstart/spa/vanillajs/01-login-->
+            <button id="btn-api" onclick="deleteReservation()">Slett reservasjon</button>
+            <button class="hidden" id="btn-logout" onclick="logout()">Logg ut</button> <!--provided by auth0 tutorial: https://auth0.com/docs/quickstart/spa/vanillajs/01-login-->
+        </div>
+    </header>
+    
+    <main>
+
+        <section id="hjem">
+            <div class="center-text">
+                <h2 id="top-text">For å reservere virtuell maskin må du logge inn</h2>
+                <div class="hidden" id="gated-content">
+                    
+                    <div id='calendar'></div>
+
+                    <div id="popupOverlay" class="overlay-container"> 
+                        <div class="popup-box"> 
+                            <h2 style="color: black;">Reserver Virtuell Maskin</h2> 
+                            <form class="form-container" id="calenderForm"> 
+                                <label class="form-label" for="name">Start tid:</label>
+                                <input class="form-input" type="datetime-local" id="start_time" name="start" required>
+                                <label class="form-label" for="email">Slutt tid:</label>
+                                <input class="form-input" type="datetime-local" id="end_time" name="end" required>
+                  
+                                <button class="btn-submit" type="submit">Submit</button> 
+                            </form> 
+                            <button class="btn-close-popup" onclick="togglePopup()">Close </button>
+                        </div> 
+                    </div>
+              </div> 
+              
+    
+            </div>
+        </section>
+
+            <iframe class="hidden" id="noVNC_iframe" src="#" height="100%" width="100%" frameborder="0"></iframe> <!--Embeds the NoVNC console in the index page-->
+
+        <section id="omoss">
+            <div class="center-text">
+                <h2>Om Oss</h2>
+                <p>Vi er tre datastudenter som gjennomfører bacheloroppgaven gjennom våren 2024.</p>
+
+                <h2>Vår historie</h2>
+                <p>historien kommer her</p>
+    
+                <h2>Mål</h2>
+                <p>måla våres</p>
+    
+                <h2>Gruppemedlemmer</h2>
+            </div>
+
+            <div class="profiloverskrift">
+                <!-- Repeat this block for each team member -->
+                <div class="profil">
+                    <h3 class="text-xl font-bold">Christoffer Eigil Prag</h3>
+                    <img src="/Bilder/Christoffer.jpg" alt="Christoffer Eigil Prag" class="profilbilde">
+                    <p>Daglig leder</p>
+                </div>
+                <div class="profil">
+                    <h3 class="text-xl font-bold">Jon Kristian Nilssen</h3>
+                    <img src="/Bilder/JonKristian.jpg" alt="Jon Kristian Nilssen" class="profilbilde">
+                    <p>Prosjekt leder</p>
+                </div>
+                <div class="profil">
+                    <h3 class="text-xl font-bold">Nicolay Ackermann Engen</h3>
+                    <img src="/Bilder/Nicolay.jpg" alt="Nicolay Ackermann Engen" class="profilbilde">
+                    <p>Teknisk leder</p>
+                </div>
+            </div>
+
+            <h2>Verdier</h2>
+            <ul class="liste_verdi">
+                <li>[verdi 1]</li>
+                <li>[verdi 2]</li>
+                <li>[verdi 3]</li>
+                
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        © [2024] Gruppe 3. All rights reserved.
+    </footer>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script src="/Javascript/script.js"></script>
+</body>
+</html>

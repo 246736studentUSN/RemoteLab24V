@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxmox VM management Service
+After=network.target
+
+[Service]
+User=database-user
+ExecStart=/usr/bin/python3 /opt/proxmox-vm-manager/main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

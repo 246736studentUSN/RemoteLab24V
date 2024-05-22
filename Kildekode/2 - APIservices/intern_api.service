@@ -1,0 +1,15 @@
+[Unit]
+Description=Intern API Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/java -jar /opt/api_services/intern.jar
+WorkingDirectory=/opt/api_services/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
